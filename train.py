@@ -14,7 +14,6 @@ mask_paths = list(train_df["mark_path"])
 features = [utils.load_feature(path) for path in img_paths]
 labels = [utils.load_label(path) for path in mask_paths]
 
-print(features.shape,labels.shape)
 
 shuffle(features, labels)
 train_features, val_features, train_labels, val_labels = train_test_split(features, labels, test_size=0.2)
@@ -25,6 +24,8 @@ x = tf.placeholder(dtype=tf.float32,shape=[None,128,128,1])
 y = tf.placeholder(dtype=tf.float32,shape=[None,128,128,1])
 
 out_layer = network.network(x,16)
+
+los_mat = tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y)
 
 loss = tf.reduce_mean( tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y) )
 train_step = tf.train.AdamOptimizer().minimize(loss)
@@ -37,17 +38,20 @@ with tf.Session() as sess:
 
     while True:
         batch_features,batch_labels = next(train_gen)
-        sess.run(train_step,feed_dict={x:batch_features, y:batch_labels})
 
-        if step%50:
-            train_loss = sess.run(loss,feed_dict={x:batch_features, y:batch_labels})
-            print("At step %s: the training loss is %s"%(step,train_loss))
-        if step%1000 == 0:
-            val_loss = utils.validation_loss(val_features,val_labels,sess,loss,x,y,batch_size=config.BATCH_SIZE)
-            print("At step %s: validation loss is %s"%(step,val_loss))
-
-            saver.save(sess,global_step=step,save_path=config.CHECKFILE)
-            print("saving model at step %s"%step)
-
-        step += 1
+        mat = sess.run(los_mat,feed_dict={x:batch_features, y:batch_labels})
+        print(mat.shape)
+        # sess.run(train_step,feed_dict={x:batch_features, y:batch_labels})
+        #
+        # if step%50:
+        #     train_loss = sess.run(loss,feed_dict={x:batch_features, y:batch_labels})
+        #     print("At step %s: the training loss is %s"%(step,train_loss))
+        # if step%1000 == 0:
+        #     val_loss = utils.validation_loss(val_features,val_labels,sess,loss,x,y,batch_size=config.BATCH_SIZE)
+        #     print("At step %s: validation loss is %s"%(step,val_loss))
+        #
+        #     saver.save(sess,global_step=step,save_path=config.CHECKFILE)
+        #     print("saving model at step %s"%step)
+        #
+        # step += 1
 
