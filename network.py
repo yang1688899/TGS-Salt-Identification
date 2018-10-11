@@ -1,4 +1,4 @@
-from tensorflow.keras.layers import Input, Conv2D, Conv2DTranspose, MaxPooling2D, concatenate, Dropout
+from keras.layers import Input, Conv2D, Conv2DTranspose, MaxPooling2D, concatenate, Dropout
 
 def network(input_layer, start_neurons):
     # 128 -> 64

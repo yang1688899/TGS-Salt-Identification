@@ -6,7 +6,11 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
+from keras import Input,Model
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+import numpy as np
 
+#data
 train_df,test_df = utils.generate_dataframe()
 img_paths = list(train_df["img_path"])
 mask_paths = list(train_df["mark_path"])
@@ -20,27 +24,46 @@ train_features, val_features, train_labels, val_labels = train_test_split(featur
 
 train_gen = utils.train_generator(train_features,train_labels,batch_size=config.BATCH_SIZE)
 
-x = tf.placeholder(dtype=tf.float32,shape=[None,128,128,1])
-y = tf.placeholder(dtype=tf.float32,shape=[None,128,128,1])
+#model
+input_layer = Input((config.TARGET_SIZE, config.TARGET_SIZE, 1))
+output_layer = network.network(input_layer, 16)
 
-out_layer = network.network(x,16)
+model = Model(input_layer,output_layer)
 
-los_mat = tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y)
+model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-loss = tf.reduce_mean( tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y) )
-train_step = tf.train.AdamOptimizer().minimize(loss)
+model.summary()
 
-saver = tf.train.Saver()
+#hyper parameters
+early_stopping = EarlyStopping(patience=10, verbose=1)
+model_checkpoint = ModelCheckpoint("./keras.model", save_best_only=True, verbose=1)
+reduce_lr = ReduceLROnPlateau(factor=0.1, patience=5, min_lr=0.00001, verbose=1)
 
-with tf.Session() as sess:
+epochs = 200
+batch_size = 32
 
-    sess,step = utils.start_or_restore_training(sess,saver,checkpoint_dir=config.CHECKDIR)
+#train
+history = model.fit(np.array(train_features), np.array(train_labels),
+                    validation_data=[np.array(val_features), np.array(val_labels)],
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    callbacks=[early_stopping, model_checkpoint, reduce_lr])
+# los_mat = tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y)
+#
+# loss = tf.reduce_mean( tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y) )
+# train_step = tf.train.AdamOptimizer().minimize(loss)
+#
+# saver = tf.train.Saver()
 
-    while True:
-        batch_features,batch_labels = next(train_gen)
-
-        mat = sess.run(los_mat,feed_dict={x:batch_features, y:batch_labels})
-        print(mat.shape)
+# with tf.Session() as sess:
+#
+#     sess,step = utils.start_or_restore_training(sess,saver,checkpoint_dir=config.CHECKDIR)
+#
+#     while True:
+#         batch_features,batch_labels = next(train_gen)
+#
+#         mat = sess.run(los_mat,feed_dict={x:batch_features, y:batch_labels})
+#         print(mat.shape)
         # sess.run(train_step,feed_dict={x:batch_features, y:batch_labels})
         #
         # if step%50:
