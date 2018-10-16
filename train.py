@@ -48,6 +48,9 @@ history = model.fit(np.array(train_features), np.array(train_labels),
                     epochs=epochs,
                     batch_size=batch_size,
                     callbacks=[early_stopping, model_checkpoint, reduce_lr])
+
+
+
 # los_mat = tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y)
 #
 # loss = tf.reduce_mean( tf.nn.sigmoid_cross_entropy_with_logits(logits=out_layer,labels=y) )

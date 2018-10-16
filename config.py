@@ -10,3 +10,4 @@ CHECKDIR = "./save/"
 CHECKFILE = "./save/model.ckpt"
 
 BATCH_SIZE = 32
+

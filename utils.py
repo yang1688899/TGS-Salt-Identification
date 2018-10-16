@@ -95,3 +95,7 @@ def validation_loss(val_features,val_labels,sess,loss,x,y,batch_size):
 
 
 
+
+
+
+

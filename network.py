@@ -58,6 +58,6 @@ def network(input_layer, start_neurons):
     uconv1 = Conv2D(start_neurons * 1, (3, 3), activation="relu", padding="same")(uconv1)
 
     # uconv1 = Dropout(0.5)(uconv1)
-    output_layer = Conv2D(1, (1, 1), padding="same",activation="linear")(uconv1)
+    output_layer = Conv2D(1, (1, 1), padding="same",activation="sigmoid")(uconv1)
 
     return output_layer
