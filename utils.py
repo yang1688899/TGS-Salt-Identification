@@ -70,11 +70,11 @@ def train_generator(features,labels,batch_size):
             flip_features = []
             flip_labels = []
 
-            for feature,label in batch_features,batch_labels:
+            for feature,label in zip(batch_features,batch_labels):
                 if np.random.choice([0, 1]):
                     flip_code = np.random.choice([-1, 0, 1])
                     flip_features.append(cv2.flip(feature, flip_code))
-                    flip_labels.append(cv2.flip(labels, flip_code))
+                    flip_labels.append(cv2.flip(label, flip_code))
 
             yield np.array(batch_features), np.array(batch_labels)
 

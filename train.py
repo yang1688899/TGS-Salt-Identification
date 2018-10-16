@@ -14,9 +14,7 @@ mask_paths = list(train_df["mark_path"])
 features = [utils.load_feature(path) for path in img_paths]
 labels = [utils.load_label(path) for path in mask_paths]
 
-print(features.shape,labels.shape)
-
-shuffle(features, labels)
+features,labels = shuffle(features, labels)
 train_features, val_features, train_labels, val_labels = train_test_split(features, labels, test_size=0.2)
 
 train_gen = utils.train_generator(train_features,train_labels,batch_size=config.BATCH_SIZE)
@@ -39,7 +37,7 @@ with tf.Session() as sess:
         batch_features,batch_labels = next(train_gen)
         sess.run(train_step,feed_dict={x:batch_features, y:batch_labels})
 
-        if step%50:
+        if step%100==0:
             train_loss = sess.run(loss,feed_dict={x:batch_features, y:batch_labels})
             print("At step %s: the training loss is %s"%(step,train_loss))
         if step%1000 == 0:
